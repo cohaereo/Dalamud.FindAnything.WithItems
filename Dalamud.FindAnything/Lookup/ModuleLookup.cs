@@ -26,6 +26,7 @@ public sealed class ModuleLookup : ILookup {
             new PluginSettingsModule(),
             new GearsetsModule(),
             new CraftingRecipesModule(),
+            new ItemsModule(),
             new GatheringItemsModule(),
             new MountsModule(),
             new MinionsModule(),

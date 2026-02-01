@@ -18,7 +18,7 @@ public class Configuration : IPluginConfiguration {
         SearchSetting.Emote | SearchSetting.PluginSettings | SearchSetting.Gearsets | SearchSetting.CraftingRecipes |
         SearchSetting.GatheringItems | SearchSetting.Mounts | SearchSetting.Minions | SearchSetting.MacroLinks |
         SearchSetting.Internal | SearchSetting.Maths | SearchSetting.FashionAccessories | SearchSetting.Collection |
-        SearchSetting.ExtraCommand | SearchSetting.Facewear | SearchSetting.Coordinates | SearchSetting.Reserved13 |
+        SearchSetting.ExtraCommand | SearchSetting.Facewear | SearchSetting.Coordinates | SearchSetting.Items |
         SearchSetting.Reserved14 | SearchSetting.Reserved15 | SearchSetting.Reserved16 | SearchSetting.Reserved17 |
         SearchSetting.Reserved18 | SearchSetting.Reserved19 | SearchSetting.Reserved20 | SearchSetting.Reserved21 |
         SearchSetting.Reserved22 | SearchSetting.Reserved23 | SearchSetting.Reserved24;
@@ -77,7 +77,7 @@ public class Configuration : IPluginConfiguration {
         ExtraCommand = 1 << 16,
         Facewear = 1 << 17,
         Coordinates = 1 << 18,
-        Reserved13 = 1 << 19,
+        Items = 1 << 19,
         Reserved14 = 1 << 20,
         Reserved15 = 1 << 21,
         Reserved16 = 1 << 22,
@@ -206,6 +206,7 @@ public class Configuration : IPluginConfiguration {
         SearchSetting.Facewear,
         SearchSetting.CraftingRecipes,
         SearchSetting.GatheringItems,
+        SearchSetting.Items,
     ];
 
     [JsonProperty("MatchMode", NullValueHandling = NullValueHandling.Ignore)]
