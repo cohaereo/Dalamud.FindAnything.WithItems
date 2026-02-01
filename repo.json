@@ -1,0 +1,24 @@
+[
+  {
+    "Author": "goat",
+    "Name": "Wotsit",
+    "InternalName": "Dalamud.FindAnything",
+    "AssemblyVersion": "1.1.1.0",
+    "Description": "Finder of anything",
+    "ApplicableVersion": "any",
+    "Tags": [
+      "find",
+      "teleport",
+      "wiki"
+    ],
+    "DalamudApiLevel": 14,
+    "LoadRequiredState": 0,
+    "LoadSync": false,
+    "CanUnloadAsync": false,
+    "LoadPriority": 0,
+    "Punchline": "Find anything, go anywhere, in style.",
+    "DownloadLinkInstall": "https://github.com/cohaereo/Dalamud.FindAnything.WithItems/releases/download/v1.1.1.0/Dalamud.FindAnything.zip",
+    "DownloadLinkTesting": "https://github.com/cohaereo/Dalamud.FindAnything.WithItems/releases/download/v1.1.1.0/Dalamud.FindAnything.zip",
+    "DownloadLinkUpdate": "https://github.com/cohaereo/Dalamud.FindAnything.WithItems/releases/download/v1.1.1.0/Dalamud.FindAnything.zipp"
+  }
+]
