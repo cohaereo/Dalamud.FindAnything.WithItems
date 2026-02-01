@@ -1,10 +1,10 @@
 [
   {
     "Author": "goat",
-    "Name": "Wotsit",
-    "InternalName": "Dalamud.FindAnything",
+    "Name": "Wotsit (with item search)",
+    "InternalName": "Dalamud.FindAnything.WithItems",
     "AssemblyVersion": "1.1.1.0",
-    "Description": "Finder of anything",
+    "Description": "Finder of anything (including items)",
     "ApplicableVersion": "any",
     "Tags": [
       "find",
