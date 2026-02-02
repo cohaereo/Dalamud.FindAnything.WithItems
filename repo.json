@@ -2,7 +2,7 @@
   {
     "Author": "goat",
     "Name": "Wotsit (with item search)",
-    "InternalName": "Dalamud.FindAnything",
+    "InternalName": "Dalamud.FindAnything.WithItems",
     "AssemblyVersion": "1.1.1.0",
     "Description": "Finder of anything (including items)",
     "ApplicableVersion": "any",
