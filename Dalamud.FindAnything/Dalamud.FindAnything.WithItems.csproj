@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Dalamud.FindAnything.json">
+    <Content Include="Dalamud.FindAnything.WithItems.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="noses\Agent.png">

@@ -3,22 +3,18 @@
     "Author": "goat",
     "Name": "Wotsit (with item search)",
     "InternalName": "Dalamud.FindAnything.WithItems",
-    "AssemblyVersion": "1.1.1.0",
+    "AssemblyVersion": "1.1.3.1",
     "Description": "Finder of anything (including items)",
     "ApplicableVersion": "any",
-    "Tags": [
-      "find",
-      "teleport",
-      "wiki"
-    ],
+    "Tags": ["find", "teleport", "wiki"],
     "DalamudApiLevel": 14,
     "LoadRequiredState": 0,
     "LoadSync": false,
     "CanUnloadAsync": false,
     "LoadPriority": 0,
     "Punchline": "Find anything, go anywhere, in style.",
-    "DownloadLinkInstall": "https://github.com/cohaereo/Dalamud.FindAnything.WithItems/releases/download/v1.1.1.0/Dalamud.FindAnything.zip",
-    "DownloadLinkTesting": "https://github.com/cohaereo/Dalamud.FindAnything.WithItems/releases/download/v1.1.1.0/Dalamud.FindAnything.zip",
-    "DownloadLinkUpdate": "https://github.com/cohaereo/Dalamud.FindAnything.WithItems/releases/download/v1.1.1.0/Dalamud.FindAnything.zipp"
+    "DownloadLinkInstall": "https://github.com/cohaereo/Dalamud.FindAnything.WithItems/releases/download/v1.1.3.1/Dalamud.FindAnything.WithItems.zip",
+    "DownloadLinkTesting": "https://github.com/cohaereo/Dalamud.FindAnything.WithItems/releases/download/v1.1.3.1/Dalamud.FindAnything.WithItems.zip",
+    "DownloadLinkUpdate": "https://github.com/cohaereo/Dalamud.FindAnything.WithItems/releases/download/v1.1.3.1/Dalamud.FindAnything.WithItems.zipp"
   }
 ]
