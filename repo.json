@@ -7,7 +7,7 @@
     "Description": "Finder of anything (including items)",
     "ApplicableVersion": "any",
     "Tags": ["find", "teleport", "wiki"],
-    "DalamudApiLevel": 14,
+    "DalamudApiLevel": 15,
     "LoadRequiredState": 0,
     "LoadSync": false,
     "CanUnloadAsync": false,
