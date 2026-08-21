@@ -149,6 +149,12 @@ public class Configuration : IPluginConfiguration {
 
     public Dictionary<string, float> MathConstants { get; set; } = new();
 
+    public bool DisableWindowSounds { get; set; } = true;
+    public bool DisableFadeInFadeOut { get; set; } = true;
+    public bool DisableBackgroundBlur { get; set; } = false;
+    public bool OverrideBgAlpha { get; set; } = false;
+    public float OverrideBgAlphaValue { get; set; } = 1.0f;
+
     public Vector2 PositionOffset { get; set; } = new(0, 0);
 
     public bool OnlyWikiMode { get; set; } = false;
@@ -256,6 +262,13 @@ public class Configuration : IPluginConfiguration {
     public CraftingSingleSelectAction CraftingRecipeSelect = CraftingSingleSelectAction.OpenInLog;
     public CraftingSingleSelectAction CraftingItemSelectSingle = CraftingSingleSelectAction.OpenInLog;
     public CraftingMergedSelectAction CraftingItemSelectMerged = CraftingMergedSelectAction.SearchInLog;
+
+    public Dictionary<string, IpcConfig> IpcConfigs { get; set; } = new();
+
+    public record IpcConfig {
+        public bool Enabled { get; set; } = true;
+        public int? OverrideWeight { get; set; } = null;
+    }
 
     public GameWindow.SimulationState? SimulationState { get; set; } = null;
 

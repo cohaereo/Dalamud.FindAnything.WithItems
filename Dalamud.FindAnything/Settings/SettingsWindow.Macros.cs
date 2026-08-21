@@ -20,7 +20,7 @@ public partial class SettingsWindow {
         using var tabItem = ImRaii.TabItem("Macro links");
         if (!tabItem) return;
 
-        using var scrollChild = ImRaii.Child("scrollArea", ImGuiHelpers.ScaledVector2(0, SaveDiscardOffset), false, ImGuiWindowFlags.HorizontalScrollbar);
+        using var scrollChild = ImRaii.Child("scrollArea", Vector2.Zero, false, ImGuiWindowFlags.HorizontalScrollbar);
         if (!scrollChild) return;
 
         ImGui.TextColored(ImGuiColors.DalamudGrey, "Macro links");
@@ -50,10 +50,10 @@ public partial class SettingsWindow {
 
         ImGui.Columns(6);
         ImGui.SetColumnWidth(0, 240 + 5 * ImGuiHelpers.GlobalScale);
-        ImGui.SetColumnWidth(1, 120 + 5 * ImGuiHelpers.GlobalScale);
-        ImGui.SetColumnWidth(2, 60 + 5 * ImGuiHelpers.GlobalScale);
+        ImGui.SetColumnWidth(1, 110 + 5 * ImGuiHelpers.GlobalScale);
+        ImGui.SetColumnWidth(2, 50 + 5 * ImGuiHelpers.GlobalScale);
         ImGui.SetColumnWidth(3, 250 + 5 * ImGuiHelpers.GlobalScale);
-        ImGui.SetColumnWidth(4, 70 + 5 * ImGuiHelpers.GlobalScale);
+        ImGui.SetColumnWidth(4, 100 + 5 * ImGuiHelpers.GlobalScale);
         ImGui.SetColumnWidth(5, 30 + 5 * ImGuiHelpers.GlobalScale);
 
         ImGui.Separator();
@@ -143,7 +143,7 @@ public partial class SettingsWindow {
                 macro.Shared = isShared;
             }
         } else {
-            using (new ImRaii.Color()
+            using (new ImRaii.ColorDisposable()
                        .Push(ImGuiCol.FrameBg, ImGuiColors.ParsedGrey)
                        .Push(ImGuiCol.FrameBgActive, ImGuiColors.ParsedGrey)
                        .Push(ImGuiCol.FrameBgHovered, ImGuiColors.ParsedGrey)
@@ -181,6 +181,12 @@ public partial class SettingsWindow {
         }
 
         ImGui.NextColumn();
+
+        var iconTex = FindAnythingPlugin.TexCache.GetIcon((uint)macro.IconId);
+        using (var wrap = iconTex.GetWrapOrEmpty()) {
+            ImGui.Image(wrap.Handle, new Vector2(ImGui.GetFrameHeight(), ImGui.GetFrameHeight()));
+            ImGui.SameLine();
+        }
 
         ImGui.SetNextItemWidth(-1);
         var icon = macro.IconId;

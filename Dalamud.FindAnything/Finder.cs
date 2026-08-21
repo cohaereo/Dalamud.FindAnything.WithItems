@@ -5,7 +5,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
-using Serilog;
+using Dalamud.Interface.Windowing;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -13,15 +13,17 @@ using System.Numerics;
 
 namespace Dalamud.FindAnything;
 
-public sealed class Finder : IDisposable {
+public sealed class Finder : Window {
     private const int MaxOnePage = 10;
     private const int SelectionScrollOffset = 1;
-
-    public bool IsOpen { get; private set; }
 
     private readonly RootLookup rootLookup;
     private readonly SearchState searchState;
     private readonly CursorController cursorControl;
+
+    private Vector2 size = new(500, 30);
+    private Vector2 textSize = new(40, 20);
+    private float smallPadding = 4;
 
     private ISearchResult[] results = [];
 
@@ -37,16 +39,12 @@ public sealed class Finder : IDisposable {
 
     private bool resetScroll;
 
-    public Finder(RootLookup rootLookup, Normalizer normalizer) {
+    public Finder(RootLookup rootLookup, Normalizer normalizer) : base("Wotsit", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse) {
         this.rootLookup = rootLookup;
         searchState = new SearchState(FindAnythingPlugin.Configuration, normalizer);
         cursorControl = new CursorController(this);
 
-        Service.PluginInterface.UiBuilder.Draw += Draw;
-    }
-
-    public void Dispose() {
-        Service.PluginInterface.UiBuilder.Draw -= Draw;
+        RespectCloseHotkey = false;
     }
 
     public void Open(bool openToWiki = false) {
@@ -68,10 +66,20 @@ public sealed class Finder : IDisposable {
         rootLookup.OnOpen();
         resetScroll = true;
         UpdateSearch("");
+
+        ApplyWindowSettings();
         IsOpen = true;
     }
 
-    public void Close() {
+    private void ApplyWindowSettings() {
+        var config = FindAnythingPlugin.Configuration;
+        DisableWindowSounds = config.DisableWindowSounds;
+        DisableFadeInFadeOut = config.DisableFadeInFadeOut;
+        AllowBackgroundBlur = !config.DisableBackgroundBlur;
+        BgAlpha = config.OverrideBgAlpha ? config.OverrideBgAlphaValue : null;
+    }
+
+    private void Close() {
         IsOpen = false;
         SelectedIndex = 0;
         searchState.Reset();
@@ -107,66 +115,72 @@ public sealed class Finder : IDisposable {
         return lookupResult.Results.ToArray();
     }
 
-    private void Draw() {
-        if (!IsOpen)
-            return;
-
-        ImGuiHelpers.ForceNextWindowMainViewport();
-
-        var textSize = ImGui.CalcTextSize("poop");
-        var size = new Vector2(500 * ImGuiHelpers.GlobalScale,
-            textSize.Y + ImGui.GetStyle().FramePadding.Y * 2 + ImGui.GetStyle().WindowPadding.Y * 2);
+    public override void PreDraw() {
+        textSize = ImGui.CalcTextSize("poop");
+        size = new Vector2(
+            500 * ImGuiHelpers.GlobalScale,
+            textSize.Y + ImGui.GetStyle().FramePadding.Y * 2 + ImGui.GetStyle().WindowPadding.Y * 2
+        );
 
         var mainViewportSize = ImGuiHelpers.MainViewport.Size;
         var mainViewportMiddle = mainViewportSize / 2;
-        var startPos = ImGuiHelpers.MainViewport.Pos + (mainViewportMiddle - (size / 2));
 
+        var startPos = ImGuiHelpers.MainViewport.Pos + (mainViewportMiddle - (size / 2));
         startPos.Y -= 200;
         startPos += FindAnythingPlugin.Configuration.PositionOffset;
 
-        var scaledFour = 4 * ImGuiHelpers.GlobalScale;
-        var iconSize = textSize with { X = textSize.Y };
-        var scrollbarWidth = ImGui.GetStyle().ScrollbarSize + 2;
-        var windowPadding = ImGui.GetStyle().WindowPadding.X * 2;
+        smallPadding = 4 * ImGuiHelpers.GlobalScale;
 
         if (results is { Length: > 0 }) {
-            size.Y += Math.Min(results.Length, MaxOnePage) * (float.Floor(textSize.Y) + float.Floor(scaledFour));
-            size.Y -= float.Floor(scaledFour / 2);
+            size.Y += Math.Min(results.Length, MaxOnePage) * (float.Floor(textSize.Y) + float.Floor(smallPadding));
+            size.Y -= float.Floor(smallPadding / 2);
             size.Y += ImGui.GetStyle().ItemSpacing.Y;
         }
 
-        ImGui.SetNextWindowPos(startPos);
-        ImGui.SetNextWindowSize(size);
-        ImGui.SetNextWindowSizeConstraints(size, size with { Y = size.Y + (400 * ImGuiHelpers.GlobalScale) });
+        Position = startPos;
+        Size = size / ImGuiHelpers.GlobalScale;
+    }
 
+    public override void Draw() {
         var closeFinder = false;
-        if (ImGui.Begin("###findeverything",
-                ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize |
-                ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
-            try {
-                DrawFinder(size, iconSize, textSize, windowPadding, scrollbarWidth, scaledFour, out closeFinder);
-            } catch (Exception ex) {
-                Log.Error(ex, "Error in DrawFinder");
+        try {
+            DrawFinder(out closeFinder);
+        } catch (Exception ex) {
+            Service.Log.Error(ex, "Error in DrawFinder");
 
-                using var color = ImRaii.PushColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
-                ImGui.Text("Could render Wotsit UI. Please report this error.");
-            }
+            using var color = ImRaii.PushColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
+            ImGui.Text("Could not render Wotsit UI. Please report this error.");
         }
-
-        ImGui.End();
 
         if (closeFinder) {
             Close();
         }
     }
 
-    private void DrawFinder(Vector2 size, Vector2 iconSize, Vector2 textSize, float windowPadding, float scrollbarWidth, float scaledFour, out bool closeFinder) {
+    private void DrawFinder(out bool closeFinder) {
         closeFinder = false;
+
+        var iconSize = textSize with { X = textSize.Y };
+        var scrollbarWidth = ImGui.GetStyle().ScrollbarSize + (2 * ImGuiHelpers.GlobalScale);
+        var windowPadding = ImGui.GetStyle().WindowPadding.X * 2;
+
+        var inputFlags = ImGuiInputTextFlags.NoUndoRedo;
+
+        if (ImGui.IsKeyDown(ImGuiHelpers.VirtualKeyToImGuiKey(VirtualKey.ESCAPE))) {
+            Service.Log.Verbose("Escape");
+            closeFinder = true;
+            inputFlags |= ImGuiInputTextFlags.ReadOnly;
+        }
+
+        if (!ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows)) {
+            Service.Log.Verbose("Focus loss");
+            closeFinder = true;
+        }
 
         using (ImRaii.ItemWidth(size.X - iconSize.Y - windowPadding - ImGui.GetStyle().FramePadding.X - ImGui.GetStyle().ItemSpacing.X)) {
             var searchInput = searchState.RawString;
             if (ImGui.InputTextWithHint("###findeverythinginput", rootLookup.GetPlaceholder(), ref searchInput, 1000,
-                    ImGuiInputTextFlags.NoUndoRedo)) {
+                    inputFlags)) {
                 UpdateSearch(searchInput);
             }
         }
@@ -190,14 +204,9 @@ public sealed class Finder : IDisposable {
             ImGui.Text(icon.ToIconString());
         }
 
-        if (!ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows) || ImGui.IsKeyDown(ImGuiHelpers.VirtualKeyToImGuiKey(VirtualKey.ESCAPE))) {
-            Log.Verbose("Focus loss or escape");
-            closeFinder = true;
-        }
-
-        using var style = new ImRaii.Style()
-            .Push(ImGuiStyleVar.ItemSpacing, new Vector2(8 * ImGuiHelpers.GlobalScale, scaledFour))
-            .Push(ImGuiStyleVar.ItemInnerSpacing, new Vector2(scaledFour, scaledFour));
+        using var style = new ImRaii.StyleDisposable()
+            .Push(ImGuiStyleVar.ItemSpacing, new Vector2(smallPadding * 2, smallPadding))
+            .Push(ImGuiStyleVar.ItemInnerSpacing, new Vector2(smallPadding, smallPadding));
 
         if (results.Length == 0)
             return;
@@ -263,7 +272,7 @@ public sealed class Finder : IDisposable {
             if (disableMouse)
                 ImGui.PopStyleVar();
 
-            ImGui.SameLine(nameTextSize + scaledFour);
+            ImGui.SameLine(nameTextSize + smallPadding);
             ImGui.TextColored(ImGuiColors.DalamudGrey, result.CatName);
 
             if (i < 9 && FindAnythingPlugin.Configuration.QuickSelectKey != VirtualKey.NO_KEY) {

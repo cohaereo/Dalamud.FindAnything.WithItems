@@ -5,17 +5,20 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
 namespace Dalamud.FindAnything.Settings;
 
 public partial class SettingsWindow {
+    private int searchDragDropSource;
+
     private void DrawSearchTab() {
         using var tabItem = ImRaii.TabItem("What to search");
         if (!tabItem) return;
 
-        using var scrollChild = ImRaii.Child("scrollArea", ImGuiHelpers.ScaledVector2(0, SaveDiscardOffset), false, ImGuiWindowFlags.HorizontalScrollbar);
+        using var scrollChild = ImRaii.Child("scrollArea", Vector2.Zero, false, ImGuiWindowFlags.HorizontalScrollbar);
         if (!scrollChild) return;
 
         ImGui.TextColored(ImGuiColors.DalamudGrey, "What to search");
@@ -95,15 +98,36 @@ public partial class SettingsWindow {
 
             ImGui.SameLine();
 
-            if (isRequired) {
-                CheckboxLocked($"Search in {name}");
-            } else {
-                ImGui.CheckboxFlags($"Search in {name}", ref flags, (uint)search);
+            using (ImRaii.Group()) {
+                if (isRequired) {
+                    CheckboxLocked($"Search in {name}");
+                } else {
+                    ImGui.CheckboxFlags($"Search in {name}", ref flags, (uint)search);
+                }
+            }
+
+            using (var source = ImRaii.DragDropSource(ImGuiDragDropFlags.SourceAllowNullId)) {
+                if (source) {
+                    ImGui.SetDragDropPayload("SEARCH", ReadOnlySpan<byte>.Empty);
+                    ImGui.Text($"Search in {name}");
+                    searchDragDropSource = i;
+                }
+            }
+
+            using (var target = ImRaii.DragDropTarget()) {
+                if (target) {
+                    var payload = ImGui.AcceptDragDropPayload("SEARCH");
+                    if (!payload.IsNull) {
+                        var moving = order[searchDragDropSource];
+                        order.RemoveAt(searchDragDropSource);
+                        order.Insert(i, moving);
+                    }
+                }
             }
 
             ImGui.NextColumn();
 
-            using (ImRaii.ItemWidth(120)) {
+            using (ImRaii.ItemWidth(120 * ImGuiHelpers.GlobalScale)) {
                 var weight = searchWeights.GetValueOrDefault(search, SearchModule.DefaultWeight);
                 if (ImGui.InputInt($"##{search}-weight", ref weight, SearchModule.DefaultWeight / 10, SearchModule.DefaultWeight)) {
                     if (weight is > 0 and < SearchModule.DefaultWeight * 1000) {
@@ -128,15 +152,23 @@ public partial class SettingsWindow {
     }
 
     private static void CheckboxLocked(string text) {
-        using (new ImRaii.Color()
+        var startPos = ImGui.GetCursorPos();
+        using (new ImRaii.ColorDisposable()
+                   .Push(ImGuiCol.CheckMark, 0)
+                   .Push(ImGuiCol.FrameBg, 0)
+                   .Push(ImGuiCol.FrameBgActive, 0)
+                   .Push(ImGuiCol.FrameBgHovered, 0)) {
+            var flags = 0;
+            ImGui.CheckboxFlags(text, ref flags, 0);
+        }
+
+        ImGui.SetCursorPos(startPos);
+        using (new ImRaii.ColorDisposable()
                    .Push(ImGuiCol.Text, ImGui.GetColorU32(ImGuiCol.TextDisabled))
                    .Push(ImGuiCol.Button, ImGui.GetColorU32(ImGuiCol.FrameBg))
                    .Push(ImGuiCol.ButtonActive, ImGui.GetColorU32(ImGuiCol.FrameBgActive))
                    .Push(ImGuiCol.ButtonHovered, ImGui.GetColorU32(ImGuiCol.FrameBgHovered))) {
             ImGuiComponents.IconButton(FontAwesomeIcon.Lock, new Vector2(ImGui.GetFrameHeight(), ImGui.GetFrameHeight()));
         }
-        ImGui.SameLine();
-        ImGui.SetCursorPosX(ImGui.GetCursorPos().X - ImGui.GetStyle().ItemSpacing.X + ImGui.GetStyle().ItemInnerSpacing.X);
-        ImGui.Text(text);
     }
 }
